@@ -398,13 +398,13 @@ function Files({ device, log }: { device: Device; log: Log }) {
     const reader = new FileReader();
     reader.onload = async () => {
       const b64 = (reader.result as string).split(",")[1];
-      await fetch(`${API}/api/runfiles`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ device: device.name, name: file.name, content: b64 }),
-      });
-      toast.success(`Sent ${file.name} to agent`);
-      log(`Run file sent: ${file.name}`);
+      try {
+        await fetch(`${API}/api/runfiles`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ device: device.name, name: file.name, content: b64 }),
+        });
+      } catch { /* ignore */ }
     };
     reader.readAsDataURL(file);
   };
