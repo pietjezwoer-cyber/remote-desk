@@ -77,13 +77,15 @@ export default function Page() {
   const [pwError, setPwError] = useState("");
 
   useEffect(() => {
-    if (typeof window !== "undefined" && localStorage.getItem("authed") === "1") setAuthed(true);
+    try {
+      if (typeof window !== "undefined" && localStorage.getItem("authed") === "1") setAuthed(true);
+    } catch { /* ignore */ }
   }, []);
 
   const login = () => {
     // change this password
     if (pw === "2485") {
-      localStorage.setItem("authed", "1");
+      try { localStorage.setItem("authed", "1"); } catch { /* ignore */ }
       setAuthed(true);
     } else {
       setPwError("wrong password");
