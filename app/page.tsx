@@ -72,6 +72,38 @@ function arrayBufferToBase64(buf: ArrayBuffer): string {
 }
 
 export default function Page() {
+  const [authed, setAuthed] = useState(false);
+  const [pw, setPw] = useState("");
+  const [pwError, setPwError] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && localStorage.getItem("authed") === "1") setAuthed(true);
+  }, []);
+
+  const login = () => {
+    // change this password
+    if (pw === "2485") {
+      localStorage.setItem("authed", "1");
+      setAuthed(true);
+    } else {
+      setPwError("wrong password");
+    }
+  };
+
+  if (!authed) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[#0b0c0e] text-[#d8dce3]">
+        <div className="w-80 space-y-3 p-6 border border-[#25282e] rounded-lg bg-[#111316]">
+          <h1 className="text-lg font-semibold text-[#e8ecf2]">Login</h1>
+          <Input type="password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="password" className="bg-[#0f1114] border-[#25282e]" />
+          {pwError && <div className="text-red-400 text-xs">{pwError}</div>}
+          <Button onClick={login} className={accent + " w-full"}>Enter</Button>
+        </div>
+      </div>
+    );
+  }
+
+  // existing Page body below...
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -89,7 +121,15 @@ export default function Page() {
     try {
       const res = await fetch(`${API}/api/devices`, { cache: "no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setDevices(await res.json());
+      const raw = await res.json();
+      const mapped = (raw || []).map((d: any) => ({
+        name: d?.name ?? "unknown",
+        ip: d?.ip ?? "",
+        os: d?.os ?? "",
+        status: d?.status ?? "offline",
+        last_seen: d?.last_seen ?? "",
+      }));
+      setDevices(mapped);
       setError(null);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Network error";
